@@ -1,7 +1,5 @@
 # UC5-Edge-Patient-Monitoring
 
-# UC5-Edge-Patient-Monitoring
-
 ## 🎯 Overview
 This repository demonstrates **in-network edge computing** for **remote patient monitoring** using **P4-programmable switches**. It showcases how an IoMT gateway can:
 - Aggregate patient sensor data,

@@ -1,0 +1,6 @@
+{
+  "target": "bmv2",
+  "p4info": "build/XGB_Mon_Sepsis.p4.p4info.txtpb",
+  "bmv2_json": "build/XGB_Mon_Sepsis.json",
+  "table_entries": []
+}

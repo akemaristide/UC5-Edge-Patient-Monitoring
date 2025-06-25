@@ -15,7 +15,8 @@ class Alert(Packet):
         BitField("timestamp", 0, 48),  # Timestamp of the alert (48 bits)
         IntField("alert_value", 0),
         BitField("news2Score", 0, 8),  # NEWS2 score (8 bits)
-        BitField("news2Alert", 0, 8)   # NEWS2 alert level
+        BitField("news2Alert", 0, 8),   # NEWS2 alert level
+        IntField("hfPrediction", 0)     # HF prediction (not used in this script)
     ]
 
 # Bind Alert packet with Ether using Ethertype 0x1236
@@ -29,27 +30,34 @@ MONITOR_IFACE = "s1-eth1"
 # Always create a new CSV file and write the header
 with open(CSV_FILE, "w", newline="") as csvfile:
     writer = csv.writer(csvfile)
-    writer.writerow(["reception_time", "patient_id", "alert_timestamp", "sepsis_alert", "news2_score", "news2_alert"])
+    writer.writerow(["reception_time", "patient_id", "alert_timestamp", "sepsis_alert", "heart_fail_alert" ,"news2_score", "news2_alert"])
 
 def process_alert(packet):
     if Alert in packet:
         alert = packet[Alert]
         # Extract fields from alert header
-        patient_id   = alert.patient_id
-        alert_ts     = alert.timestamp
-        alert_value  = alert.alert_value
-        news2_score  = alert.news2Score
-        news2_alert  = alert.news2Alert
+        patient_id       = alert.patient_id
+        alert_ts         = alert.timestamp
+        alert_value      = alert.alert_value
+        news2_score      = alert.news2Score
+        news2_alert      = alert.news2Alert
+        heart_fail_alert = alert.hfPrediction
 
         # Get current time as reception time
         recv_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Print information
+        # Print information for sepsis alert
         if alert_value == 1:
-            print(f"\033[91m Sepsis alert received @ {recv_time} -> Patient: {patient_id}, Value: {alert_value}\033[0m")
+            print(f"\033[91m Sepsis Risk prediction received @ {recv_time} -> Patient: {patient_id}, Value: {alert_value}\033[0m")
         else:
-            print(f"Sepsis alert received @ {recv_time} -> Patient: {patient_id}, Value: {alert_value}")
-        # Color-code alertLevel
+            print(f"Sepsis Risk prediction received @ {recv_time} -> Patient: {patient_id}, Value: {alert_value}")
+        # Print information for heart failure alert
+        if heart_fail_alert == 1:
+            print(f"\033[91m Heart Failure Risk prediction received @ {recv_time} -> Patient: {patient_id}, Value: {heart_fail_alert}\033[0m")
+        else:
+            print(f"Heart Failure Risk prediction received @ {recv_time} -> Patient: {patient_id}, Value: {heart_fail_alert}")
+
+        # Color-code alertLevel for NEWS2 score
         if news2_alert == 1:
             alert_str = colored(f"Medium (1)", "yellow")
         elif news2_alert == 2:

@@ -13,7 +13,6 @@
 //
 //  --cpu-port 510
 
-const   int     CPU_PORT_CLONE_SESSION_ID = 57;
 const   int     NUM_PATIENTS              = 2000; // Number of patients
 const   bit<16> ETHERTYPE_Planter         = 0x1234;
 const   bit<16> ETHERTYPE_Sensor          = 0x1235;
@@ -746,7 +745,6 @@ control SwitchIngress(
         reg_referral_source.write(pid, 0);   
         reg_age.write(pid, 0);
         reg_sex.write(pid, 0);
-        reg_condition.write(pid, 0);
     }
 
     // Action that resets the feature presence flags for a patient

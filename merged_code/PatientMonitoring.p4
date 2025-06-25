@@ -11,7 +11,7 @@
 // following command line option to enable the ability for the
 // software switch to receive and send messages to the controller:
 //
-//     --cpu-port 510
+//  --cpu-port 510
 
 const   int     CPU_PORT_CLONE_SESSION_ID = 57;
 const   int     NUM_PATIENTS              = 2000; // Number of patients
@@ -61,6 +61,7 @@ header Alert_h {
     bit<32>  patient_id;
     bit<48>  timestamp; // Timestamp of the alert
     bit<32>  alert_value; 
+    bit<8>   news2Score; // NEWS2 score
 }
 
 struct header_t {
@@ -106,6 +107,16 @@ struct metadata_t {
     bit<32>  DstAddr;
     bit<32>  result;
     bit<8>   flag ;
+
+    // Individual news2 scores for each vital sign
+    bit<2> respiratoryRateScore;
+    bit<2> oxygenSaturationScore;
+    bit<2> systolicBPScore;
+    bit<2> pulseRateScore;
+    bit<2> consciousnessScore;
+    bit<2> temperatureScore;
+    bit<8> news2Score;
+    bit<8> news2Alert;
 }
 
 /*************************************************************************
@@ -200,48 +211,186 @@ control SwitchIngress(
     action send(bit<9> port) {
         ig_intr_md.egress_spec = port;
     }
-
     action drop() {
         mark_to_drop(ig_intr_md);
+    }
+    // NEWS2 actions and tables
+     action set_respiratory_rate_score(bit<2> score) {
+        meta.respiratoryRateScore = score;
+    }
+    action set_oxygen_saturation_score(bit<2> score) {
+        meta.oxygenSaturationScore = score;
+    }
+    action set_systolic_bp_score(bit<2> score) {
+        meta.systolicBPScore = score;
+    }
+    action set_pulse_rate_score(bit<2> score) {
+        meta.pulseRateScore = score;
+    }
+    action set_consciousness_score(bit<2> score) {
+        meta.consciousnessScore = score;
+    }
+    action set_temperature_score(bit<2> score) {
+        meta.temperatureScore = score;
+    }
+    action set_news2_result(bit<8> total_score, bit<8> alert_level) {
+       meta.news2Score = total_score;
+       meta.news2Alert = alert_level;
+    }
+    // Table for Respiratory Rate Score
+    table respiratory_rate_score {
+        key = {
+            meta.respiratory_rate: range;
+        }
+        actions = {
+            set_respiratory_rate_score;
+            NoAction;
+        }
+        default_action = NoAction();
+        const entries = {
+            0..8     : set_respiratory_rate_score(3);
+            9..11    : set_respiratory_rate_score(1);
+            12..20   : set_respiratory_rate_score(0);
+            21..24   : set_respiratory_rate_score(2);
+            25..0xFF : set_respiratory_rate_score(3);
+        }
+    }
+    // Table for Oxygen Saturation Score - Scale 1 (normal)
+    table oxygen_saturation_score {
+        key = {
+            meta.oxygen_saturation: range;
+        }
+        actions = {
+            set_oxygen_saturation_score;
+            NoAction;
+        }
+        default_action = NoAction();
+        const entries = {
+            0..91  : set_oxygen_saturation_score(3);
+            92..93 : set_oxygen_saturation_score(2);
+            94..95 : set_oxygen_saturation_score(1);
+            96..100: set_oxygen_saturation_score(0);
+        }
+    }
+    // Table for Systolic BP Score
+    table systolic_bp_score {
+        key = {
+            meta.systolic_bp: range;
+        }
+        actions = {
+            set_systolic_bp_score;
+            NoAction;
+        }
+        default_action = NoAction();
+        const entries = {
+            0..90    : set_systolic_bp_score(3);
+            91..100  : set_systolic_bp_score(2);
+            101..110 : set_systolic_bp_score(1);
+            111..219 : set_systolic_bp_score(0);
+            220..0xFFFF : set_systolic_bp_score(3);
+        }
+    }
+    // Table for Pulse Rate Score
+    table pulse_rate_score {
+        key = {
+            meta.pulse_rate: range;
+        }
+        actions = {
+            set_pulse_rate_score;
+            NoAction;
+        }
+        default_action = NoAction();
+        const entries = {
+            0..40   : set_pulse_rate_score(3);
+            41..50  : set_pulse_rate_score(1);
+            51..90  : set_pulse_rate_score(0);
+            91..110 : set_pulse_rate_score(1);
+            111..130: set_pulse_rate_score(2);
+            131..0xFF: set_pulse_rate_score(3);
+        }
+    }
+    // Table for Consciousness Level Score
+    table consciousness_score {
+        key = {
+            meta.avpu: exact;
+        }
+        actions = {
+            set_consciousness_score;
+            NoAction;
+        }
+        default_action = NoAction();
+        const entries = {
+            0 : set_consciousness_score(0);
+            1 : set_consciousness_score(3);
+            2 : set_consciousness_score(3);
+            3 : set_consciousness_score(3);
+        }
+    }
+    // Table for Temperature Score
+    table temperature_score {
+        key = {
+            meta.temperature: range;  // Note: Temperature is scaled *10
+        }
+        actions = {
+            set_temperature_score;
+            NoAction;
+        }
+        default_action = NoAction();
+        const entries = {
+            0..350    : set_temperature_score(3);
+            351..360  : set_temperature_score(1);
+            361..380  : set_temperature_score(0);
+            381..390  : set_temperature_score(1);
+            391..0xFFFF : set_temperature_score(2);
+        }
+    }
+    // Final table to calculate total score and alert level
+    table news2_aggregate {
+        key = {
+            meta.respiratoryRateScore    : exact;
+            meta.oxygenSaturationScore   : exact;
+            meta.systolicBPScore         : exact;
+            meta.pulseRateScore          : exact;
+            meta.consciousnessScore      : exact;
+            meta.temperatureScore        : exact;
+            meta.supplemental_oxygen     : exact;
+        }
+        actions = {
+            set_news2_result;
+            NoAction;
+        }
+        default_action = NoAction();
+        size = 8200;
     }
 
     // Planter actions and tables
     action extract_feature0(out bit<8> meta_code, bit<8> tree){
         meta_code = tree;
     }
-
     action extract_feature1(out bit<6> meta_code, bit<6> tree){
         meta_code = tree;
     }
-
     action extract_feature2(out bit<8> meta_code, bit<8> tree){
         meta_code = tree;
     }
-
     action extract_feature3(out bit<8> meta_code, bit<8> tree){
         meta_code = tree;
     }
-
     action extract_feature4(out bit<4> meta_code, bit<4> tree){
         meta_code = tree;
     }
-
     action extract_feature5(out bit<8> meta_code, bit<8> tree){
         meta_code = tree;
     }
-
     action extract_feature6(out bit<4> meta_code, bit<4> tree){
         meta_code = tree;
     }
-
     action extract_feature7(out bit<8> meta_code, bit<8> tree){
         meta_code = tree;
     }
-
     action extract_feature8(out bit<18> meta_code, bit<18> tree){
         meta_code = tree;
     }
-
     action extract_feature9(out bit<8> meta_code, bit<8> tree){
         meta_code = tree;
     }
@@ -661,8 +810,10 @@ control SwitchIngress(
         hdr.ethernet.etherType = ETHERTYPE_Alert; // Set the ethernet type for Alert
         hdr.Alert.patient_id   = pid;
         hdr.Alert.timestamp    = tnow;
-        hdr.Alert.alert_value  = alert_value;
-        ig_intr_md.egress_spec = MONITORING_PORT; // Send to monitoring port
+        hdr.Alert.alert_value  = alert_value; // sepsis prediction result
+        hdr.Alert.news2Score   = meta.news2Score; 
+        hdr.Alert.news2Alert   = meta.news2Alert;  
+        ig_intr_md.egress_spec = MONITORING_PORT; // to monitoring port
     }
 
     apply {
@@ -785,7 +936,17 @@ control SwitchIngress(
             drop();
         }
 
-        if (runInference == 1) { // run ML inference with Planter
+        if (runInference == 1) { 
+            // calculate NEWS2 scores
+            respiratory_rate_score.apply();
+            oxygen_saturation_score.apply();
+            systolic_bp_score.apply();
+            pulse_rate_score.apply();
+            consciousness_score.apply();
+            temperature_score.apply();
+            news2_aggregate.apply();
+
+            // run ML inference with Planter
             lookup_feature0.apply();
             lookup_feature1.apply();
             lookup_feature2.apply();

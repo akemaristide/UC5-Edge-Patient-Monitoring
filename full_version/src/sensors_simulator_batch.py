@@ -33,16 +33,31 @@ if send_iface not in get_if_list():
     print(f"Error: Interface {send_iface} not found. Available: {get_if_list()}")
     exit(1)
 
-# Load data from CSV
-data_file = './data/val_data_normal_vs_sepsis.csv'
+# Load and merge datasets
+sepsis_file = './data/val_data_normal_vs_sepsis.csv'
+heart_failure_file = './data/val_normal_vs_heart_failure.csv'
+
 try:
-    Test_Data = pd.read_csv(data_file)
+    # Load sepsis dataset (contains normal rows with condition=0 and sepsis rows with condition=1)
+    sepsis_data = pd.read_csv(sepsis_file)
+    
+    # Load heart failure dataset 
+    heart_failure_data = pd.read_csv(heart_failure_file)
+    
+    # Filter heart failure dataset to only include heart failure cases (condition=2)
+    heart_failure_cases = heart_failure_data[heart_failure_data['condition'] == 2]
+    
+    # Merge sepsis data (normal + sepsis) with heart failure cases only
+    Test_Data = pd.concat([sepsis_data, heart_failure_cases], ignore_index=True)
+    
 except Exception as e:
-    print(f"Error loading CSV file: {str(e)}")
+    print(f"Error loading CSV files: {str(e)}")
     exit(1)
 
 # Multiply temperature by 10 (to avoid decimals)
 Test_Data['temperature'] = Test_Data['temperature'] * 10
+
+# Shuffle the combined dataset
 Test_Data = Test_Data.sample(frac=1).reset_index(drop=True)
 
 # Define sensor columns in order

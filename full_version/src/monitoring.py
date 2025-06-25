@@ -72,7 +72,7 @@ def process_alert(packet):
         # Append record to CSV file
         with open(CSV_FILE, "a", newline="") as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow([recv_time, patient_id, alert_ts, alert_value, news2_score, news2_alert])
+            writer.writerow([recv_time, patient_id, alert_ts, alert_value, heart_fail_alert, news2_score, news2_alert])
 
 def main():
     print(f"Monitoring for alert packets on interface {MONITOR_IFACE}...")

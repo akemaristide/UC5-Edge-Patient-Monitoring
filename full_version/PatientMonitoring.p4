@@ -93,7 +93,6 @@ struct metadata_t {
     bit<8>  code_f7;
     bit<18> code_f8;
     bit<8>  code_f9;
-
     bit<7> sum_prob;
     bit<4> tree_0_vote;
     bit<4> tree_1_vote;
@@ -104,8 +103,25 @@ struct metadata_t {
     bit<7> tree_2_prob;
     bit<7> tree_3_prob;
 
+    bit<18> code_f0_hf;
+    bit<16> code_f1_hf;
+    bit<14> code_f2_hf;
+    bit<12> code_f3_hf;
+    bit<12> code_f4_hf;
+    bit<14> code_f5_hf;
+    bit<7> sum_prob_hf;
+    bit<4> tree_0_vote_hf;
+    bit<4> tree_1_vote_hf;
+    bit<4> tree_2_vote_hf;
+    bit<4> tree_3_vote_hf;
+    bit<7> tree_0_prob_hf;
+    bit<7> tree_1_prob_hf;
+    bit<7> tree_2_prob_hf;
+    bit<7> tree_3_prob_hf;
+
     bit<32>  DstAddr;
     bit<32>  result;
+    bit<32>  result_hf;
     bit<8>   flag ;
 
     // Individual news2 scores for each vital sign
@@ -1015,16 +1031,17 @@ control SwitchIngress(
     }
 
     // Create and send alert
-    action generate_alert_pkt(bit<32> pid, bit<48> tnow, bit<32> alert_value) {
+    action generate_alert_pkt(bit<32> pid, bit<48> tnow) {
         hdr.Sensor.setInvalid(); // remove sensor header
         hdr.Planter.setInvalid(); // remove Planter header
         hdr.Alert.setValid();
         hdr.ethernet.etherType = ETHERTYPE_Alert; // Set the ethernet type for Alert
         hdr.Alert.patient_id   = pid;
         hdr.Alert.timestamp    = tnow;
-        hdr.Alert.alert_value  = alert_value; // sepsis prediction result
+        hdr.Alert.alert_value  = meta.result; // sepsis prediction result
         hdr.Alert.news2Score   = meta.news2Score; 
         hdr.Alert.news2Alert   = meta.news2Alert;  
+        hdr.Alert.hfPrediction = meta.result_hf; // Heart Failure prediction result
         ig_intr_md.egress_spec = MONITORING_PORT; // to monitoring port
     }
 
@@ -1192,9 +1209,9 @@ control SwitchIngress(
 
             bit<48> tnow = ig_intr_md.ingress_global_timestamp;
             if (hdr.Sensor.isValid()) {
-                generate_alert_pkt(hdr.Sensor.patient_id, tnow, meta.result);
+                generate_alert_pkt(hdr.Sensor.patient_id, tnow);
             } else {
-                generate_alert_pkt(hdr.Planter.patient_id, tnow, meta.result);
+                generate_alert_pkt(hdr.Planter.patient_id, tnow);
             }
         }
     }

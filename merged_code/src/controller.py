@@ -9,7 +9,7 @@ import time
 import threading
 from datetime import datetime
 
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../../utils/'))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../utils/'))
 import grpc
 import p4runtime_lib.bmv2
 from p4runtime_lib.error_utils import printGrpcError

@@ -5,7 +5,7 @@ import csv
 import time
 from datetime import datetime
 from termcolor import colored
-from scapy.all import Ether, sniff, Packet, IntField, BitField, bind_layers, ShortField, BytesField
+from scapy.all import Ether, sniff, Packet, IntField, BitField, bind_layers, ShortField
 
 # Define Alert packet structure
 class Alert(Packet):
@@ -59,7 +59,7 @@ def process_alert(packet):
         else:
             alert_str = f"Unknown ({news2_alert})"  # Fallback for unexpected values
         # Print required fields
-        print(f"NEWS2 alert received  @ {recv_time} -> Patient: {patient_id}, Score: {alert_value}, Alert Level: {alert_str}")
+        print(f"NEWS2 alert received  @ {recv_time} -> Patient: {patient_id}, Score: {news2_score}, Alert Level: {alert_str}")
         
         # Append record to CSV file
         with open(CSV_FILE, "a", newline="") as csvfile:

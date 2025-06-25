@@ -58,7 +58,7 @@ tables/
     bash ./scripts/run_controller.sh
     ```
     This will:
-    - Push entries from `tables/s1-commands.txt`
+    - Push entries from `tables/s-commands.txt`
     - Launch the controller (`controller.py`) to listen for alerts and send heartbeat packets.
 ---
 

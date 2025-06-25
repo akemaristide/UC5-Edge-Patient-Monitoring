@@ -1,6 +1,8 @@
 #!/bin/bash
-simple_switch_CLI < ./tables/s1-commands.txt
+simple_switch_CLI < ./tables/s1-commands-sep.txt
+sleep 1
+simple_switch_CLI < ./tables/s1-commands-hfa.txt
 sleep 1
 simple_switch_CLI < ./tables/news2-commands.txt
-sleep 2
+sleep 1
 python3 ./src/controller.py --p4info ./build/PatientMonitoring.p4.p4info.txtpb --bmv2-json ./build/PatientMonitoring.json

@@ -761,7 +761,6 @@ control SwitchIngress(
         meta.tree_0_vote_hf = 1;
     }
 
-
     action read_prob1_hf(bit<7> prob, bit<4> vote){
         meta.tree_1_prob_hf = prob;
         meta.tree_1_vote_hf = vote;
@@ -770,7 +769,6 @@ control SwitchIngress(
         meta.tree_1_vote_hf = 1;
     }
 
-
     action read_prob2_hf(bit<7> prob, bit<4> vote){
         meta.tree_2_prob_hf = prob;
         meta.tree_2_vote_hf = vote;
@@ -778,7 +776,6 @@ control SwitchIngress(
     action write_default_class2_hf() {
         meta.tree_2_vote_hf = 1;
     }
-
 
     action read_prob3_hf(bit<7> prob, bit<4> vote){
         meta.tree_3_prob_hf = prob;
@@ -1175,7 +1172,6 @@ control SwitchIngress(
             consciousness_score.apply();
             temperature_score.apply();
             news2_aggregate.apply();
-
             // Feature tables for Sepsis prediction
             lookup_feature0.apply();
             lookup_feature1.apply();

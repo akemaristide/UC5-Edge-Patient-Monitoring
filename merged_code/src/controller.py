@@ -9,7 +9,7 @@ import time
 import threading
 from datetime import datetime
 
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../utils/'))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../../utils/'))
 import grpc
 import p4runtime_lib.bmv2
 from p4runtime_lib.error_utils import printGrpcError
@@ -24,7 +24,7 @@ from p4.v1 import p4runtime_pb2
 # Global configuration
 # ---------------------------
 CPU_PORT = 510  # CPU port used in both PacketIn and PacketOut
-CSV_LOG = "controller_imputation_log.csv"
+CSV_LOG = "./logs/controller_imputation_log.csv"
 NUM_PATIENTS = 2000
 HEARTBEAT_NS = 15  # Heartbeat interval in seconds
 

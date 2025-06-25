@@ -62,6 +62,7 @@ header Alert_h {
     bit<48>  timestamp; // Timestamp of the alert
     bit<32>  alert_value; 
     bit<8>   news2Score; // NEWS2 score
+    bit<8>   news2Alert; // NEWS2 alert level
 }
 
 struct header_t {

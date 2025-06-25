@@ -59,9 +59,10 @@ header Sensor_h {
 header Alert_h {
     bit<32>  patient_id;
     bit<48>  timestamp; // Timestamp of the alert
-    bit<32>  alert_value; 
+    bit<32>  alert_value; // Sepsis alert value 
     bit<8>   news2Score; // NEWS2 score
     bit<8>   news2Alert; // NEWS2 alert level
+    bit<32>  hfPrediction; // Heart Failure prediction result
 }
 
 struct header_t {

@@ -514,7 +514,6 @@ control SwitchIngress(
         meta.tree_0_vote = 0;
     }
 
-
     action read_prob1(bit<7> prob, bit<4> vote){
         meta.tree_1_prob = prob;
         meta.tree_1_vote = vote;
@@ -523,7 +522,6 @@ control SwitchIngress(
         meta.tree_1_vote = 0;
     }
 
-
     action read_prob2(bit<7> prob, bit<4> vote){
         meta.tree_2_prob = prob;
         meta.tree_2_vote = vote;
@@ -531,7 +529,6 @@ control SwitchIngress(
     action write_default_class2() {
         meta.tree_2_vote = 0;
     }
-
 
     action read_prob3(bit<7> prob, bit<4> vote){
         meta.tree_3_prob = prob;
@@ -647,6 +644,222 @@ control SwitchIngress(
         size = 1677;
         default_action = write_default_decision;
     }
+
+    // Tables and actions for Heart Failure prediction
+    action extract_feature0_hf(out bit<18> meta_code, bit<18> tree){
+        meta_code = tree;
+    }
+
+    action extract_feature1_hf(out bit<16> meta_code, bit<16> tree){
+        meta_code = tree;
+    }
+
+    action extract_feature2_hf(out bit<14> meta_code, bit<14> tree){
+        meta_code = tree;
+    }
+
+    action extract_feature3_hf(out bit<12> meta_code, bit<12> tree){
+        meta_code = tree;
+    }
+
+    action extract_feature4_hf(out bit<12> meta_code, bit<12> tree){
+        meta_code = tree;
+    }
+
+    action extract_feature5_hf(out bit<14> meta_code, bit<14> tree){
+        meta_code = tree;
+    }    
+    
+    @pragma stage 0
+    table lookup_feature0_hf {
+        key = { meta.temperature:ternary; }
+        actions = {
+            extract_feature0_hf(meta.code_f0_hf);
+            NoAction;
+            }
+        size = 32;
+        default_action = NoAction;
+    }
+
+    @pragma stage 0
+    table lookup_feature1_hf {
+        key = { meta.pulse_rate:ternary; }
+        actions = {
+            extract_feature1_hf(meta.code_f1_hf);
+            NoAction;
+            }
+        size = 32;
+        default_action = NoAction;
+    }
+
+    @pragma stage 0
+    table lookup_feature2_hf {
+        key = { meta.systolic_bp:ternary; }
+        actions = {
+            extract_feature2_hf(meta.code_f2_hf);
+            NoAction;
+            }
+        size = 35;
+        default_action = NoAction;
+    }
+
+    @pragma stage 0
+    table lookup_feature3_hf {
+        key = { meta.respiratory_rate:ternary; }
+        actions = {
+            extract_feature3_hf(meta.code_f3_hf);
+            NoAction;
+            }
+        size = 10;
+        default_action = NoAction;
+    }
+
+    @pragma stage 0
+    table lookup_feature4_hf {
+        key = { meta.referral_source:ternary; }
+        actions = {
+            extract_feature4_hf(meta.code_f4_hf);
+            NoAction;
+            }
+        size = 4;
+        default_action = NoAction;
+    }
+
+    @pragma stage 0
+    table lookup_feature5_hf {
+        key = { meta.oxygen_saturation:ternary; }
+        actions = {
+            extract_feature5_hf(meta.code_f5_hf);
+            NoAction;
+            }
+        size = 18;
+        default_action = NoAction;
+    }
+
+    action read_prob0_hf(bit<7> prob, bit<4> vote){
+        meta.tree_0_prob_hf = prob;
+        meta.tree_0_vote_hf = vote;
+    }
+    action write_default_class0_hf() {
+        meta.tree_0_vote_hf = 1;
+    }
+
+
+    action read_prob1_hf(bit<7> prob, bit<4> vote){
+        meta.tree_1_prob_hf = prob;
+        meta.tree_1_vote_hf = vote;
+    }
+    action write_default_class1_hf() {
+        meta.tree_1_vote_hf = 1;
+    }
+
+
+    action read_prob2_hf(bit<7> prob, bit<4> vote){
+        meta.tree_2_prob_hf = prob;
+        meta.tree_2_vote_hf = vote;
+    }
+    action write_default_class2_hf() {
+        meta.tree_2_vote_hf = 1;
+    }
+
+
+    action read_prob3_hf(bit<7> prob, bit<4> vote){
+        meta.tree_3_prob_hf = prob;
+        meta.tree_3_vote_hf = vote;
+    }
+    action write_default_class3_hf() {
+        meta.tree_3_vote_hf = 1;
+    }    
+    
+    @pragma stage 1
+    table lookup_leaf_id0_hf {
+        key = { meta.code_f0_hf[3:0]:exact;
+                meta.code_f1_hf[3:0]:exact;
+                meta.code_f2_hf[2:0]:exact;
+                meta.code_f3_hf[2:0]:exact;
+                meta.code_f4_hf[2:0]:exact;
+                meta.code_f5_hf[2:0]:exact;
+                }
+        actions={
+            read_prob0_hf;
+            write_default_class0_hf;
+        }
+        size = 6840;
+        default_action = write_default_class0_hf;
+    }
+
+    @pragma stage 1
+    table lookup_leaf_id1_hf {
+        key = { meta.code_f0_hf[7:4]:exact;
+                meta.code_f1_hf[7:4]:exact;
+                meta.code_f2_hf[5:3]:exact;
+                meta.code_f3_hf[5:3]:exact;
+                meta.code_f4_hf[5:3]:exact;
+                meta.code_f5_hf[5:3]:exact;
+                }
+        actions={
+            read_prob1_hf;
+            write_default_class1_hf;
+        }
+        size = 5952;
+        default_action = write_default_class1_hf;
+    }
+
+    @pragma stage 1
+    table lookup_leaf_id2_hf {
+        key = { meta.code_f0_hf[12:8]:exact;
+                meta.code_f1_hf[11:8]:exact;
+                meta.code_f2_hf[9:6]:exact;
+                meta.code_f3_hf[8:6]:exact;
+                meta.code_f4_hf[8:6]:exact;
+                meta.code_f5_hf[9:6]:exact;
+                }
+        actions={
+            read_prob2_hf;
+            write_default_class2_hf;
+        }
+        size = 23100;
+        default_action = write_default_class2_hf;
+    }
+
+    @pragma stage 1
+    table lookup_leaf_id3_hf {
+        key = { meta.code_f0_hf[17:13]:exact;
+                meta.code_f1_hf[15:12]:exact;
+                meta.code_f2_hf[13:10]:exact;
+                meta.code_f3_hf[11:9]:exact;
+                meta.code_f4_hf[11:9]:exact;
+                meta.code_f5_hf[13:10]:exact;
+                }
+        actions={
+            read_prob3_hf;
+            write_default_class3_hf;
+        }
+        size = 19992;
+        default_action = write_default_class3_hf;
+    }    
+    
+    action read_lable_hf(bit<32> label){
+        meta.result_hf = label;
+    }
+
+    action write_default_decision_hf() {
+        meta.result_hf = 0;
+    }
+
+    table decision_hf {
+        key = { meta.tree_0_vote_hf:exact;
+                meta.tree_1_vote_hf:exact;
+                meta.tree_2_vote_hf:exact;
+                meta.tree_3_vote_hf:exact;
+                }
+        actions={
+            read_lable_hf;
+            write_default_decision_hf;
+        }
+        size = 6555;
+        default_action = write_default_decision_hf;
+    }  
     // End of Planter actions and tables 
 
     // Monitoring actions and tables
@@ -945,7 +1158,7 @@ control SwitchIngress(
             temperature_score.apply();
             news2_aggregate.apply();
 
-            // run ML inference with Planter
+            // Feature tables for Sepsis prediction
             lookup_feature0.apply();
             lookup_feature1.apply();
             lookup_feature2.apply();
@@ -956,11 +1169,26 @@ control SwitchIngress(
             lookup_feature7.apply();
             lookup_feature8.apply();
             lookup_feature9.apply();
+            // Feature tables for Heart Failure prediction
+            lookup_feature0_hf.apply();
+            lookup_feature1_hf.apply();
+            lookup_feature2_hf.apply();
+            lookup_feature3_hf.apply();
+            lookup_feature4_hf.apply();
+            lookup_feature5_hf.apply();
+            // Code tables for Sepsis prediction
             lookup_leaf_id0.apply();
             lookup_leaf_id1.apply();
             lookup_leaf_id2.apply();
             lookup_leaf_id3.apply();
+            // Code tables for Heart Failure prediction
+            lookup_leaf_id0_hf.apply();
+            lookup_leaf_id1_hf.apply();
+            lookup_leaf_id2_hf.apply();
+            lookup_leaf_id3_hf.apply();
+            // decision tables
             decision.apply();
+            decision_hf.apply();
 
             bit<48> tnow = ig_intr_md.ingress_global_timestamp;
             if (hdr.Sensor.isValid()) {

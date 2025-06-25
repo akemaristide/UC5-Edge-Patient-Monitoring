@@ -26,8 +26,8 @@ if send_iface not in get_if_list():
     exit(1)
 
 # Load data from CSV
-# data_file = './data/val_data_sample_many_alerts.csv'
-data_file = './data/val_data_normal_vs_sepsis.csv'
+data_file = './data/val_data_sample_many_alerts.csv'
+#data_file = './data/val_data_normal_vs_sepsis.csv'
 try:
     Test_Data = pd.read_csv(data_file)
 except Exception as e:

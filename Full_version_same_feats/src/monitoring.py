@@ -13,7 +13,7 @@ class Alert(Packet):
     fields_desc = [
         IntField("patient_id", 0),
         BitField("timestamp", 0, 48),  # Timestamp of the alert (48 bits)
-        IntField("alert_value", 0),
+        IntField("sepPrediction", 0),
         BitField("news2Score", 0, 8),  # NEWS2 score (8 bits)
         BitField("news2Alert", 0, 8),   # NEWS2 alert level
         IntField("hfPrediction", 0)     # HF prediction (not used in this script)
@@ -38,7 +38,7 @@ def process_alert(packet):
         # Extract fields from alert header
         patient_id       = alert.patient_id
         alert_ts         = alert.timestamp
-        alert_value      = alert.alert_value
+        sepsis_alert     = alert.sepPrediction
         news2_score      = alert.news2Score
         news2_alert      = alert.news2Alert
         heart_fail_alert = alert.hfPrediction
@@ -47,10 +47,10 @@ def process_alert(packet):
         recv_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Print information for sepsis alert
-        if alert_value == 1:
-            print(f"\033[91m Sepsis Risk prediction received @ {recv_time} -> Patient: {patient_id}, Value: {alert_value}\033[0m")
+        if sepsis_alert == 1:
+            print(f"\033[91m Sepsis Risk prediction received @ {recv_time} -> Patient: {patient_id}, Value: {sepsis_alert}\033[0m")
         else:
-            print(f"Sepsis Risk prediction received @ {recv_time} -> Patient: {patient_id}, Value: {alert_value}")
+            print(f"Sepsis Risk prediction received @ {recv_time} -> Patient: {patient_id}, Value: {sepsis_alert}")
         # Print information for heart failure alert
         if heart_fail_alert == 1:
             print(f"\033[91m Heart Failure Risk prediction received @ {recv_time} -> Patient: {patient_id}, Value: {heart_fail_alert}\033[0m")
@@ -72,7 +72,7 @@ def process_alert(packet):
         # Append record to CSV file
         with open(CSV_FILE, "a", newline="") as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow([recv_time, patient_id, alert_ts, alert_value, heart_fail_alert, news2_score, news2_alert])
+            writer.writerow([recv_time, patient_id, alert_ts, sepsis_alert, heart_fail_alert, news2_score, news2_alert])
 
 def main():
     print(f"Monitoring for alert packets on interface {MONITOR_IFACE}...")

@@ -73,7 +73,6 @@ struct header_t {
 }
 
 struct metadata_t {
-    // Patient monitoring metadata
     bit<16> temperature;
     bit<16> oxygen_saturation;
     bit<16> pulse_rate;
@@ -85,7 +84,6 @@ struct metadata_t {
     bit<8>  age; 
     bit<8>  sex;
 
-    // Sepsis model metadata
     bit<8>  code_f0_sep;
     bit<6>  code_f1_sep;
     bit<8>  code_f2_sep;
@@ -96,38 +94,35 @@ struct metadata_t {
     bit<8>  code_f7_sep;
     bit<18> code_f8_sep;
     bit<8>  code_f9_sep;
-    bit<7> sum_prob_sep;
-    bit<4> tree_0_vote_sep;
-    bit<4> tree_1_vote_sep;
-    bit<4> tree_2_vote_sep;
-    bit<4> tree_3_vote_sep;
-    bit<7> tree_0_prob_sep;
-    bit<7> tree_1_prob_sep;
-    bit<7> tree_2_prob_sep;
-    bit<7> tree_3_prob_sep;
+    bit<7>  sum_prob_sep;
+    bit<4>  tree_0_vote_sep;
+    bit<4>  tree_1_vote_sep;
+    bit<4>  tree_2_vote_sep;
+    bit<4>  tree_3_vote_sep;
+    bit<7>  tree_0_prob_sep;
+    bit<7>  tree_1_prob_sep;
+    bit<7>  tree_2_prob_sep;
+    bit<7>  tree_3_prob_sep;
 
-    // Heart failure model metadata  
-    bit<6>  code_f0_hf;
-    bit<6>  code_f1_hf;
-    bit<4>  code_f2_hf;
-    bit<2>  code_f3_hf;
-    bit<6>  code_f4_hf;
-    bit<2>  code_f5_hf;
-    bit<4>  code_f6_hf;
-    bit<6>  code_f7_hf;
+    bit<6> code_f0_hf;
+    bit<6> code_f1_hf;
+    bit<4> code_f2_hf;
+    bit<2> code_f3_hf;
+    bit<6> code_f4_hf;
+    bit<2> code_f5_hf;
+    bit<4> code_f6_hf;
+    bit<6> code_f7_hf;
     bit<10> code_f8_hf;
-    bit<4>  code_f9_hf;
+    bit<4> code_f9_hf;
     bit<7> sum_prob_hf;
     bit<4> tree_0_vote_hf;
     bit<4> tree_1_vote_hf;
     bit<7> tree_0_prob_hf;
     bit<7> tree_1_prob_hf;
 
-    // Results
-    bit<32> result_sep;
-    bit<32> result_hf;
-
     bit<32>  DstAddr;
+    bit<32>  result_sep;
+    bit<32>  result_hf;
     bit<8>   flag ;
 
     // Individual news2 scores for each vital sign
@@ -386,180 +381,148 @@ control SwitchIngress(
     }
 
     // Planter actions and tables
-    // Dual feature extraction actions (extract codes for both models)
-    action extract_feature0_dual(
-        out bit<8> sep_code, out bit<6> hf_code,
-        bit<8> sep_tree, bit<6> hf_tree) {
-        sep_code = sep_tree;
-        hf_code = hf_tree;
+    action extract_feature0_sep(out bit<8> meta_code, bit<8> tree){
+        meta_code = tree;
     }
-    action extract_feature1_dual(
-        out bit<6> sep_code, out bit<6> hf_code,
-        bit<6> sep_tree, bit<6> hf_tree) {
-        sep_code = sep_tree;
-        hf_code = hf_tree;
+    action extract_feature1_sep(out bit<6> meta_code, bit<6> tree){
+        meta_code = tree;
     }
-    action extract_feature2_dual(
-        out bit<8> sep_code, out bit<4> hf_code,
-        bit<8> sep_tree, bit<4> hf_tree) {
-        sep_code = sep_tree;
-        hf_code = hf_tree;
+    action extract_feature2_sep(out bit<8> meta_code, bit<8> tree){
+        meta_code = tree;
     }
-    action extract_feature3_dual(
-        out bit<8> sep_code, out bit<2> hf_code,
-        bit<8> sep_tree, bit<2> hf_tree) {
-        sep_code = sep_tree;
-        hf_code = hf_tree;
+    action extract_feature3_sep(out bit<8> meta_code, bit<8> tree){
+        meta_code = tree;
     }
-    action extract_feature4_dual(
-        out bit<4> sep_code, out bit<6> hf_code,
-        bit<4> sep_tree, bit<6> hf_tree) {
-        sep_code = sep_tree;
-        hf_code = hf_tree;
+    action extract_feature4_sep(out bit<4> meta_code, bit<4> tree){
+        meta_code = tree;
     }
-    action extract_feature5_dual(
-        out bit<8> sep_code, out bit<2> hf_code,
-        bit<8> sep_tree, bit<2> hf_tree) {
-        sep_code = sep_tree;
-        hf_code = hf_tree;
+    action extract_feature5_sep(out bit<8> meta_code, bit<8> tree){
+        meta_code = tree;
     }
-    action extract_feature6_dual(
-        out bit<4> sep_code, out bit<4> hf_code,
-        bit<4> sep_tree, bit<4> hf_tree) {
-        sep_code = sep_tree;
-        hf_code = hf_tree;
+    action extract_feature6_sep(out bit<4> meta_code, bit<4> tree){
+        meta_code = tree;
     }
-    action extract_feature7_dual(
-        out bit<8> sep_code, out bit<6> hf_code,
-        bit<8> sep_tree, bit<6> hf_tree) {
-        sep_code = sep_tree;
-        hf_code = hf_tree;
+    action extract_feature7_sep(out bit<8> meta_code, bit<8> tree){
+        meta_code = tree;
     }
-    action extract_feature8_dual(
-        out bit<18> sep_code, out bit<10> hf_code,
-        bit<18> sep_tree, bit<10> hf_tree) {
-        sep_code = sep_tree;
-        hf_code = hf_tree;
+    action extract_feature8_sep(out bit<18> meta_code, bit<18> tree){
+        meta_code = tree;
     }
-    action extract_feature9_dual(
-        out bit<8> sep_code, out bit<4> hf_code,
-        bit<8> sep_tree, bit<4> hf_tree) {
-        sep_code = sep_tree;
-        hf_code = hf_tree;
+    action extract_feature9_sep(out bit<8> meta_code, bit<8> tree){
+        meta_code = tree;
     }
 
-    // Unified feature lookup tables
     @pragma stage 0
-    table lookup_feature0 {
-        key = { meta.temperature:ternary; }
+    table lookup_feature0_sep {
+        key = {meta.temperature:ternary; }
         actions = {
-            extract_feature0_dual(meta.code_f0_sep, meta.code_f0_hf);
+            extract_feature0_sep(meta.code_f0_sep);
             NoAction;
-        }
-        size = 32; 
+            }
+        size = 16;
         default_action = NoAction;
     }
 
     @pragma stage 0
-    table lookup_feature1 {
+    table lookup_feature1_sep {
         key = { meta.oxygen_saturation:ternary; }
         actions = {
-            extract_feature1_dual(meta.code_f1_sep, meta.code_f1_hf);
+            extract_feature1_sep(meta.code_f1_sep);
             NoAction;
-        }
-        size = 24; 
+            }
+        size = 10;
         default_action = NoAction;
     }
 
     @pragma stage 0
-    table lookup_feature2 {
+    table lookup_feature2_sep {
         key = { meta.pulse_rate:ternary; }
         actions = {
-            extract_feature2_dual(meta.code_f2_sep, meta.code_f2_hf);
+            extract_feature2_sep(meta.code_f2_sep);
             NoAction;
-        }
-        size = 26; 
+            }
+        size = 13;
         default_action = NoAction;
     }
 
     @pragma stage 0
-    table lookup_feature3 {
+    table lookup_feature3_sep {
         key = { meta.systolic_bp:ternary; }
         actions = {
-            extract_feature3_dual(meta.code_f3_sep, meta.code_f3_hf);
+            extract_feature3_sep(meta.code_f3_sep);
             NoAction;
-        }
-        size = 26; 
-        default_action = NoAction;
-    }
-
-    @pragma stage 0
-    table lookup_feature4 {
-        key = { meta.respiratory_rate:ternary; }
-        actions = {
-            extract_feature4_dual(meta.code_f4_sep, meta.code_f4_hf);
-            NoAction;
-        }
+            }
         size = 17;
         default_action = NoAction;
     }
 
     @pragma stage 0
-    table lookup_feature5 {
+    table lookup_feature4_sep {
+        key = { meta.respiratory_rate:ternary; }
+        actions = {
+            extract_feature4_sep(meta.code_f4_sep);
+            NoAction;
+            }
+        size = 7;
+        default_action = NoAction;
+    }
+
+    @pragma stage 0
+    table lookup_feature5_sep {
         key = { meta.avpu:ternary; }
         actions = {
-            extract_feature5_dual(meta.code_f5_sep, meta.code_f5_hf);
+            extract_feature5_sep(meta.code_f5_sep);
             NoAction;
-        }
-        size = 3;
+            }
+        size = 2;
         default_action = NoAction;
     }
 
     @pragma stage 0
-    table lookup_feature6 {
+    table lookup_feature6_sep {
         key = { meta.supplemental_oxygen:ternary; }
         actions = {
-            extract_feature6_dual(meta.code_f6_sep, meta.code_f6_hf);
+            extract_feature6_sep(meta.code_f6_sep);
             NoAction;
-        }
-        size = 4; 
+            }
+        size = 2;
         default_action = NoAction;
     }
 
     @pragma stage 0
-    table lookup_feature7 {
+    table lookup_feature7_sep {
         key = { meta.referral_source:ternary; }
         actions = {
-            extract_feature7_dual(meta.code_f7_sep, meta.code_f7_hf);
+            extract_feature7_sep(meta.code_f7_sep);
             NoAction;
-        }
-        size = 7; 
+            }
+        size = 4;
         default_action = NoAction;
     }
 
     @pragma stage 0
-    table lookup_feature8 {
+    table lookup_feature8_sep {
         key = { meta.age:ternary; }
         actions = {
-            extract_feature8_dual(meta.code_f8_sep, meta.code_f8_hf);
+            extract_feature8_sep(meta.code_f8_sep);
             NoAction;
-        }
-        size = 54; 
+            }
+        size = 28;
         default_action = NoAction;
     }
 
     @pragma stage 0
-    table lookup_feature9 {
+    table lookup_feature9_sep {
         key = { meta.sex:ternary; }
         actions = {
-            extract_feature9_dual(meta.code_f9_sep, meta.code_f9_hf);
+            extract_feature9_sep(meta.code_f9_sep);
             NoAction;
-        }
-        size = 4; 
+            }
+        size = 2;
         default_action = NoAction;
     }
 
-    // Sepsis model leaf lookup tables
+
     action read_prob0_sep(bit<7> prob, bit<4> vote){
         meta.tree_0_prob_sep = prob;
         meta.tree_0_vote_sep = vote;
@@ -567,6 +530,7 @@ control SwitchIngress(
     action write_default_class0_sep() {
         meta.tree_0_vote_sep = 0;
     }
+
     action read_prob1_sep(bit<7> prob, bit<4> vote){
         meta.tree_1_prob_sep = prob;
         meta.tree_1_vote_sep = vote;
@@ -574,6 +538,7 @@ control SwitchIngress(
     action write_default_class1_sep() {
         meta.tree_1_vote_sep = 0;
     }
+
     action read_prob2_sep(bit<7> prob, bit<4> vote){
         meta.tree_2_prob_sep = prob;
         meta.tree_2_vote_sep = vote;
@@ -581,6 +546,7 @@ control SwitchIngress(
     action write_default_class2_sep() {
         meta.tree_2_vote_sep = 0;
     }
+
     action read_prob3_sep(bit<7> prob, bit<4> vote){
         meta.tree_3_prob_sep = prob;
         meta.tree_3_vote_sep = vote;
@@ -676,6 +642,7 @@ control SwitchIngress(
     action read_lable_sep(bit<32> label){
         meta.result_sep = label;
     }
+
     action write_default_decision_sep() {
         meta.result_sep = 0;
     }
@@ -695,7 +662,158 @@ control SwitchIngress(
         default_action = write_default_decision_sep;
     }
 
-    // Heart failure model leaf lookup tables
+    // Tables and actions for Heart Failure prediction
+     action extract_feature0_hf(out bit<6> meta_code, bit<6> tree){
+        meta_code = tree;
+    }
+
+    action extract_feature1_hf(out bit<6> meta_code, bit<6> tree){
+        meta_code = tree;
+    }
+
+    action extract_feature2_hf(out bit<4> meta_code, bit<4> tree){
+        meta_code = tree;
+    }
+
+    action extract_feature3_hf(out bit<2> meta_code, bit<2> tree){
+        meta_code = tree;
+    }
+
+    action extract_feature4_hf(out bit<6> meta_code, bit<6> tree){
+        meta_code = tree;
+    }
+
+    action extract_feature5_hf(out bit<2> meta_code, bit<2> tree){
+        meta_code = tree;
+    }
+
+    action extract_feature6_hf(out bit<4> meta_code, bit<4> tree){
+        meta_code = tree;
+    }
+
+    action extract_feature7_hf(out bit<6> meta_code, bit<6> tree){
+        meta_code = tree;
+    }
+
+    action extract_feature8_hf(out bit<10> meta_code, bit<10> tree){
+        meta_code = tree;
+    }
+
+    action extract_feature9_hf(out bit<4> meta_code, bit<4> tree){
+        meta_code = tree;
+    }
+
+    @pragma stage 0
+    table lookup_feature0_hf {
+        key = { meta.temperature:ternary; }
+        actions = {
+            extract_feature0_hf(meta.code_f0_hf);
+            NoAction;
+            }
+        size = 17;
+        default_action = NoAction;
+    }
+
+    @pragma stage 0
+    table lookup_feature1_hf {
+        key = { meta.oxygen_saturation:ternary; }
+        actions = {
+            extract_feature1_hf(meta.code_f1_hf);
+            NoAction;
+            }
+        size = 14;
+        default_action = NoAction;
+    }
+
+    @pragma stage 0
+    table lookup_feature2_hf {
+        key = { meta.pulse_rate:ternary; }
+        actions = {
+            extract_feature2_hf(meta.code_f2_hf);
+            NoAction;
+            }
+        size = 13;
+        default_action = NoAction;
+    }
+
+    @pragma stage 0
+    table lookup_feature3_hf {
+        key = { meta.systolic_bp:ternary; }
+        actions = {
+            extract_feature3_hf(meta.code_f3_hf);
+            NoAction;
+            }
+        size = 9;
+        default_action = NoAction;
+    }
+
+    @pragma stage 0
+    table lookup_feature4_hf {
+        key = { meta.respiratory_rate:ternary; }
+        actions = {
+            extract_feature4_hf(meta.code_f4_hf);
+            NoAction;
+            }
+        size = 10;
+        default_action = NoAction;
+    }
+
+    @pragma stage 0
+    table lookup_feature5_hf {
+        key = { meta.avpu:ternary; }
+        actions = {
+            extract_feature5_hf(meta.code_f5_hf);
+            NoAction;
+            }
+        size = 1;
+        default_action = NoAction;
+    }
+
+    @pragma stage 0
+    table lookup_feature6_hf {
+        key = { meta.supplemental_oxygen:ternary; }
+        actions = {
+            extract_feature6_hf(meta.code_f6_hf);
+            NoAction;
+            }
+        size = 2;
+        default_action = NoAction;
+    }
+
+    @pragma stage 0
+    table lookup_feature7_hf {
+        key = { meta.referral_source:ternary; }
+        actions = {
+            extract_feature7_hf(meta.code_f7_hf);
+            NoAction;
+            }
+        size = 3;
+        default_action = NoAction;
+    }
+
+    @pragma stage 0
+    table lookup_feature8_hf {
+        key = { meta.age:ternary; }
+        actions = {
+            extract_feature8_hf(meta.code_f8_hf);
+            NoAction;
+            }
+        size = 26;
+        default_action = NoAction;
+    }
+
+    @pragma stage 0
+    table lookup_feature9_hf {
+        key = { meta.sex:ternary; }
+        actions = {
+            extract_feature9_hf(meta.code_f9_hf);
+            NoAction;
+            }
+        size = 2;
+        default_action = NoAction;
+    }
+
+
     action read_prob0_hf(bit<7> prob, bit<4> vote){
         meta.tree_0_prob_hf = prob;
         meta.tree_0_vote_hf = vote;
@@ -703,6 +821,8 @@ control SwitchIngress(
     action write_default_class0_hf() {
         meta.tree_0_vote_hf = 8;
     }
+
+
     action read_prob1_hf(bit<7> prob, bit<4> vote){
         meta.tree_1_prob_hf = prob;
         meta.tree_1_vote_hf = vote;
@@ -756,6 +876,7 @@ control SwitchIngress(
     action read_lable_hf(bit<32> label){
         meta.result_hf = label;
     }
+
     action write_default_decision_hf() {
         meta.result_hf = 0;
     }
@@ -771,9 +892,11 @@ control SwitchIngress(
         size = 46;
         default_action = write_default_decision_hf;
     }
+
     // End of Planter actions and tables 
 
-    // Monitoring: Tracking registers
+    // Monitoring actions and tables
+    // Tracking registers
     register<bit<48>>(NUM_PATIENTS) reg_first_timestamp; // updated at start of each window
     // Features registers
     register<bit<16>>(NUM_PATIENTS) reg_temperature; // temperature feature * 10 
@@ -1068,26 +1191,37 @@ control SwitchIngress(
             consciousness_score.apply();
             temperature_score.apply();
             news2_aggregate.apply();
-            // Unified feature tables
-            lookup_feature0.apply();
-            lookup_feature1.apply();
-            lookup_feature2.apply();
-            lookup_feature3.apply();
-            lookup_feature4.apply();
-            lookup_feature5.apply();
-            lookup_feature6.apply();
-            lookup_feature7.apply();
-            lookup_feature8.apply();
-            lookup_feature9.apply();
-            // Apply sepsis model leaf lookup tables
+            // Feature tables for Sepsis prediction
+            lookup_feature0_sep.apply();
+            lookup_feature1_sep.apply();
+            lookup_feature2_sep.apply();
+            lookup_feature3_sep.apply();
+            lookup_feature4_sep.apply();
+            lookup_feature5_sep.apply();
+            lookup_feature6_sep.apply();
+            lookup_feature7_sep.apply();
+            lookup_feature8_sep.apply();
+            lookup_feature9_sep.apply();
+            // Feature tables for Heart Failure prediction
+            lookup_feature0_hf.apply();
+            lookup_feature1_hf.apply();
+            lookup_feature2_hf.apply();
+            lookup_feature3_hf.apply();
+            lookup_feature4_hf.apply();
+            lookup_feature5_hf.apply();
+            lookup_feature6_hf.apply();
+            lookup_feature7_hf.apply();
+            lookup_feature8_hf.apply();
+            lookup_feature9_hf.apply();
+            // Code tables for Sepsis prediction
             lookup_leaf_id0_sep.apply();
             lookup_leaf_id1_sep.apply();
             lookup_leaf_id2_sep.apply();
             lookup_leaf_id3_sep.apply();
-            // Apply heart failure model leaf lookup tables
+            // Code tables for Heart Failure prediction
             lookup_leaf_id0_hf.apply();
             lookup_leaf_id1_hf.apply();
-            // Apply decision tables
+            // decision tables
             decision_sep.apply();
             decision_hf.apply();
 

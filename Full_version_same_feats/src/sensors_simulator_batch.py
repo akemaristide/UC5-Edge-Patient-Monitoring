@@ -80,28 +80,35 @@ def process_patient_window(patient_id, row, window_idx):
     print(f"\nStarting window {window_idx+1} for patient {patient_id}")
     window_start = time.time()
     # Decide if this window will have late arrivals
-    late_window = (random.random() < 0.4)
+    late_window = (random.random() < 0.1)
     if late_window:
-        print(f"Patient {patient_id}: This window will have missing values for some sensors.")
+        print(f"Patient {patient_id}: This window will have some sensors (0-4) randomly skipped.")
     else:
         print(f"Patient {patient_id}: All sensors will be on time in this window.")
+
+    # In late windows, randomly select which sensors (0-4) to skip
+    sensors_to_skip = set()
+    if late_window:
+        # Randomly pick 1-3 sensors from 0-4 to skip
+        num_to_skip = random.randint(1, 3)
+        sensors_to_skip = set(random.sample(range(5), num_to_skip))
+        print(f"Patient {patient_id}: Sensors {sensors_to_skip} will be skipped in this window.")
 
     threads = []
     for sensor_id, col in enumerate(sensor_columns):
         feature_value = int(row[col])
         
-        # Determine delay based on sensor type and window status
-        if sensor_id in [5, 6, 7, 8, 9]:
-            delay = random.uniform(0, 59)
-        else:
-            delay = random.uniform(75, 85) if late_window else random.uniform(0, 59)
+        # Check if this sensor should be skipped
+        if sensor_id in sensors_to_skip:
+            print(f"Patient {patient_id}: Sensor {sensor_id} will not send a packet (skipped).")
+            continue
+        
+        # All non-skipped sensors get normal delay between 0-59 seconds
+        delay = random.uniform(0, 59)
 
         def send_after_delay(delay=delay, sensor_id=sensor_id, feature_value=feature_value):
-            if delay <= 60:
-                time.sleep(delay)
-                send_sensor_packet(patient_id, sensor_id, timestamp_val, feature_value)
-            else:
-                print(f"Patient {patient_id}: Sensor {sensor_id} failed to send a value on time.")        
+            time.sleep(delay)
+            send_sensor_packet(patient_id, sensor_id, timestamp_val, feature_value)
         t = threading.Thread(target=send_after_delay)
         t.start()
         threads.append(t)

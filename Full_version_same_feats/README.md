@@ -92,6 +92,8 @@ The system will output alerts for both sepsis and heart failure conditions as th
 ### Machine Learning Models
 - **Sepsis Detection**: XGBoost classifier trained on vital signs to detect early sepsis indicators
 - **Heart Failure Detection**: XGBoost classifier for identifying heart failure risk patterns
+
+### Other Computations
 - **NEWS2 Scoring**: National Early Warning Score 2 implementation for general patient deterioration
 
 ### P4 Implementation

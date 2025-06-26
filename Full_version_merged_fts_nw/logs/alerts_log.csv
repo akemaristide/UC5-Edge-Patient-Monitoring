@@ -1,0 +1,2 @@
+reception_time,patient_id,alert_timestamp,sepsis_alert,heart_fail_alert,news2_score,news2_alert
+2025-06-26 01:58:41,280,348602142,0,0,16,2

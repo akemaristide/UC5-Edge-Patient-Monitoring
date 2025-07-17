@@ -35,6 +35,17 @@ tables/
 ├─ news2-commands.txt               # NEWS2 scoring table entries
 ├─ s1-commands-sep.txt              # Sepsis detection table entries
 └─ s1-commands-hf.txt               # Heart failure detection table entries
+
+tests/
+├─ accuracy_test_heart_failure.py  # ML model accuracy validation for heart failure
+├─ accuracy_test_sepsis.py          # ML model accuracy validation for sepsis
+├─ concurrency_test.py              # Concurrent patient processing tests (100-10k patients)
+├─ latency_test_mixed.py            # Latency testing across different patient conditions
+├─ performance_client.py            # Client component for system throughput testing
+├─ performance_server.py            # Server component for gateway performance monitoring
+├─ timeout_test_mixed.py            # Timeout behavior validation with mixed conditions
+├─ twenty4_hour_test.py             # 24-hour comprehensive system stability test
+└─ README.md                        # Comprehensive testing documentation
 ```
 
 ---

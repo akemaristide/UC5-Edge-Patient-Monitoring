@@ -2,14 +2,35 @@
 
 This directory contains comprehensive testing scripts for the patient monitoring system running on IoT gateway hardware with P4 programmable data plane.
 
+## 📁 Current Test Files
+
+The following test scripts are available in this directory:
+
+### Core Test Scripts
+- `accuracy_test_heart_failure.py` - ML model accuracy validation for heart failure detection
+- `accuracy_test_sepsis.py` - ML model accuracy validation for sepsis detection  
+- `concurrency_test.py` - Tests concurrent patient processing (100-50k patients tested)
+- `latency_test_mixed.py` - Measures latency across different patient conditions
+- `performance_client.py` - Client component for system throughput testing
+- `performance_server.py` - Server component for gateway performance monitoring
+- `timeout_test_mixed.py` - Validates timeout behavior with mixed patient conditions
+- `twenty4_hour_test.py` - Comprehensive 24-hour system stability test
+
+### Documentation
+- `README.md` - This comprehensive testing guide
+
+**Note**: This is a streamlined version of the test suite. Some automated plotting and batch execution scripts have been removed to focus on the core testing functionality. Manual analysis methods are provided instead.
+
 ## 📋 Test Overview
 
 | Test Type | Script | Duration | Purpose |
 |-----------|---------|----------|---------|
-| **Latency** | `latency_test.py` | 15-20 min | Measures end-to-end processing latency |
-| **Performance** | `performance_test.py` | 25-30 min | Tests system throughput with gateway monitoring |
-| **Scalability** | `scalability_test.py` | 30-40 min | Finds maximum concurrent patient capacity |
-| **Timeout** | `timeout_test.py` | 15-20 min | Validates partial sensor data handling |
+| **Mixed Latency** | `latency_test_mixed.py` | 15-20 min | Measures latency across different patient conditions |
+| **Performance** | `performance_client.py` + `performance_server.py` | 25-30 min | Client-server architecture for system throughput testing |
+| **Concurrency** | `concurrency_test.py` | 30-40 min | Tests concurrent patient processing (100-50k patients) |
+| **Mixed Timeout** | `timeout_test_mixed.py` | 15-20 min | Validates timeout behavior with mixed patient conditions |
+| **Accuracy** | `accuracy_test_sepsis.py` + `accuracy_test_heart_failure.py` | 10-15 min each | ML model accuracy validation for sepsis and heart failure |
+| **24-Hour Stress** | `twenty4_hour_test.py` | 24 hours | Comprehensive long-term system stability test |
 
 ## 🔧 Prerequisites
 
@@ -26,9 +47,9 @@ This directory contains comprehensive testing scripts for the patient monitoring
 ### Software Requirements
 ```bash
 # Install Python dependencies
-pip3 install scapy psutil matplotlib pandas numpy
+pip3 install scapy psutil matplotlib pandas numpy seaborn scikit-learn
 
-# Install SSH tools for gateway monitoring
+# Install SSH tools for gateway monitoring (for performance tests)
 sudo apt-get install sshpass openssh-client
 
 # Ensure network interfaces are up
@@ -38,7 +59,7 @@ sudo ip link set enx0c37965f8a10 up
 # Test connectivity to gateway
 ping 192.168.1.12
 
-# Verify SSH access to gateway
+# Verify SSH access to gateway (for performance tests)
 ssh ubuntu@192.168.1.12 "echo 'Gateway accessible'"
 ```
 
@@ -47,7 +68,7 @@ ssh ubuntu@192.168.1.12 "echo 'Gateway accessible'"
 # On the gateway, ensure these are installed:
 pip3 install psutil  # For system monitoring
 # BMv2 simple_switch should be running
-# Controller should be sending heartbeats every 15 seconds
+# Controller should be sending heartbeats every 60 seconds
 ```
 
 ## 🔧 Packet Structure
@@ -90,37 +111,29 @@ register_reset reg_temperature
 
 ### Individual Tests
 ```bash
-# Clear registers as shown above, then:
+# Mixed Latency Test - complete vs partial windows across conditions
+sudo python3 latency_test_mixed.py
 
-sudo python3 latency_test.py
-sudo python3 performance_test.py  # Will prompt for gateway SSH password
-sudo python3 scalability_test.py
-sudo python3 timeout_test.py
+# Performance Test - requires gateway monitoring
+# First, start the performance server on the gateway:
+# ssh ubuntu@192.168.1.12 "cd /path/to/tests && python3 performance_server.py"
+# Then run the client:
+sudo python3 performance_client.py
 
-# Generate plots from results
-python3 plot_results.py [test_type]
+# Concurrency Test - 100 to 10,000 concurrent patients  
+sudo python3 concurrency_test.py
+
+# Mixed Timeout Test - timeout behavior across patient conditions
+sudo python3 timeout_test_mixed.py
+
+# Accuracy Tests - ML model validation
+sudo python3 accuracy_test_sepsis.py
+sudo python3 accuracy_test_heart_failure.py
+
+# 24-Hour Stress Test - comprehensive system validation
+sudo python3 twenty4_hour_test.py
 ```
 
-### Complete Test Suite
-```bash
-# Run all tests automatically (includes register clearing)
-chmod +x run_all_tests.sh
-./run_all_tests.sh
-```
-
-### SSH Authentication Setup (Recommended)
-```bash
-# Set up passwordless SSH for automated testing
-ssh-keygen -t rsa -b 2048 -f ~/.ssh/gateway_key
-
-# Copy public key to gateway (will ask for password once)
-ssh-copy-id -i ~/.ssh/gateway_key.pub ubuntu@192.168.1.12
-
-# Test passwordless login
-ssh -i ~/.ssh/gateway_key ubuntu@192.168.1.12 "echo 'SSH key works!'"
-
-# Update performance_test.py to use key instead of password
-```
 
 ## 📊 Output Files
 
@@ -136,8 +149,8 @@ Each test generates CSV files with timestamps for analysis:
 - `performance_rate_N_TIMESTAMP.csv` - Detailed data for each rate tested
   - Analysis: Throughput limits, gateway CPU/memory usage, BMv2 process monitoring
 
-### Scalability Test
-- `scalability_results_TIMESTAMP.csv`
+### Concurrency Test
+- `concurrency_results_TIMESTAMP.csv`
   - Fields: num_patients, success_rate_percent, alerts_per_second, active_patients
   - Analysis: Maximum sustainable concurrent patient load
 
@@ -146,32 +159,27 @@ Each test generates CSV files with timestamps for analysis:
   - Fields: scenario, sensors_sent, missing_sensors, response_time_ms, predictions
   - Analysis: System behavior with missing sensor data and heartbeat-triggered timeouts
 
-## 📈 Plotting and Analysis
+### Accuracy Tests
+- `accuracy_sepsis_results_TIMESTAMP.csv`
+  - Fields: patient_id, condition, missing_sensors, predicted_sepsis, expected_sepsis, correct
+  - Analysis: ML model accuracy for sepsis detection with missing sensor simulation
 
-```bash
-# Generate all plots
-python3 plot_results.py
+- `accuracy_hf_results_TIMESTAMP.csv` 
+  - Fields: patient_id, condition, missing_sensors, predicted_hf, expected_hf, correct
+  - Analysis: ML model accuracy for heart failure detection with missing sensor simulation
 
-# Generate specific plot
-python3 plot_results.py latency
-python3 plot_results.py performance  
-python3 plot_results.py scalability
-python3 plot_results.py timeout
-python3 plot_results.py summary
+### 24-Hour Test
+- `twenty4_hour_results_TIMESTAMP.csv`
+  - Fields: hour, active_patients, alerts_generated, cpu_usage, memory_usage, response_time
+  - Analysis: Long-term system stability and performance trends
 
-# Plots generated:
-# - latency_analysis.png (with ML prediction analysis)
-# - performance_analysis.png (with gateway monitoring)
-# - scalability_analysis.png
-# - timeout_analysis.png  
-# - combined_summary.png
-```
 
 ## 🔍 Test Details
 
-### Latency Test
+### Mixed Latency Test
 - **Complete Windows**: Sends all 10 sensors, measures immediate P4 inference latency
-- **Partial Windows**: Sends 4-8 sensors, measures timeout latency (relies on controller's 15s heartbeat)
+- **Partial Windows**: Sends 4-8 sensors, measures timeout latency (relies on controller's 60s heartbeat)
+- **Mixed Conditions**: Tests normal, sepsis, and heart failure patient scenarios
 - **Expected Results**: 
   - Complete: 5-100ms (direct P4 processing)
   - Partial: 60,000-75,000ms (60s timeout + heartbeat trigger)
@@ -183,194 +191,38 @@ python3 plot_results.py summary
 - **Realistic Mix**: 90% complete windows, 10% partial windows
 - **Real-time Metrics**: Gateway system load, network utilization, P4 switch health
 
-### Scalability Test
-- **Concurrent Patients**: Tests 10, 20, 50, 100, 200+ concurrent patients
+### Concurrency Test
+- **Concurrent Patients**: Tests 100 to 10,000 concurrent patients in steps of 500
 - **Realistic Simulation**: Random intervals (30-300s), mixed conditions (normal/sepsis/HF)
 - **Success Metrics**: Percentage of patients generating alerts, alerts per second
 - **Duration**: 4-5 minutes per patient count level
+- **Safety**: Uses safe patient ID management to avoid collisions
 
 ### Timeout Test
 - **Missing Sensor Patterns**: Tests 10 different incomplete data scenarios
-- **Heartbeat Dependency**: Relies on controller's 15-second heartbeat schedule
+- **Heartbeat Dependency**: Relies on controller's 60-second heartbeat schedule
 - **Clinical Scenarios**: Missing critical vs non-critical sensors
 - **Imputation Validation**: Verifies ML predictions work with partial data
 
-## 🎯 Expected Results
+### Accuracy Tests
+- **Sepsis Detection**: Tests ML model accuracy with normal vs sepsis patient data
+- **Heart Failure Detection**: Tests ML model accuracy with normal vs heart failure data
+- **Missing Sensor Simulation**: Randomly removes 1-3 sensors to test robustness
+- **Alert Validation**: Compares P4 predictions with expected clinical outcomes
+- **Statistical Analysis**: Calculates accuracy, precision, recall, and F1-score metrics
 
-### Typical Performance Benchmarks
-- **Complete Window Latency**: 5-100ms (P4 hardware processing)
-- **Partial Window Latency**: 60-75 seconds (timeout + heartbeat processing)
-- **Throughput**: 50-500 patients/minute depending on gateway hardware
-- **Scalability**: 100-1000 concurrent patients depending on configuration
-- **Timeout Handling**: 95%+ success rate with partial sensor data
+### 24-Hour Stress Test
+- **Hospital Simulation**: Realistic patient admission/discharge patterns
+- **Shift Scheduling**: Simulates day/night patient load variations
+- **System Monitoring**: Continuous tracking of gateway performance metrics
+- **Long-term Stability**: Tests for memory leaks, performance degradation
 
-### Gateway Resource Usage
-- **CPU Usage**: <80% under normal load, <95% at peak
-- **Memory Usage**: <2GB for BMv2 process, <4GB system total
-- **P4 Switch Responsiveness**: >95% under normal load
-- **Network**: No packet drops on sensor/monitoring interfaces
-
-### ML Prediction Accuracy
-- **Sepsis Detection**: Should trigger for high-risk sensor values
-- **Heart Failure**: Should detect cardiovascular indicators
-- **NEWS2 Scoring**: Should correlate with clinical severity
-- **Partial Data**: Predictions should work with 4+ sensors
-
-## 🐛 Troubleshooting
-
-### Common Issues
-```bash
-# Permission denied for packet capture
-sudo python3 test_script.py
-
-# Interface not found - check actual USB-Ethernet adapter names
-ip link show  
-# Look for enx... interfaces, update scripts accordingly
-
-# BMv2 not responding
-ssh ubuntu@192.168.1.12 "pgrep -f simple_switch"
-# Check if P4 program is loaded and running
-
-# No alerts received
-sudo tcpdump -i enx0c37965f8a0a ether proto 0x1236
-# Check if alert packets are being sent from gateway
-
-# SSH connection failed (performance test)
-ssh ubuntu@192.168.1.12 "echo test"
-# Verify gateway IP, username, and password/key
-
-# Controller heartbeat not working
-ssh ubuntu@192.168.1.12 "journalctl -f | grep heartbeat"
-# Check if controller is sending heartbeats every 15 seconds
-```
-
-### Network Configuration Issues
-```bash
-# Check interface status
-ip addr show enx0c37965f8a0a
-ip addr show enx0c37965f8a10
-
-# Check routing (if needed)
-ip route show
-
-# Test low-level connectivity
-sudo tcpdump -i enx0c37965f8a10 -n
-# Send test packet, verify it's received
-
-# Check P4 table entries
-ssh ubuntu@192.168.1.12 "simple_switch_CLI --thrift-port 9090"
-# In CLI: table_dump <table_name>
-```
-
-### Performance Issues
-```bash
-# Monitor gateway resources during test
-ssh ubuntu@192.168.1.12 "htop"
-
-# Check for packet drops
-ip -s link show enx0c37965f8a0a
-
-# Monitor P4 switch performance  
-ssh ubuntu@192.168.1.12 "sudo iotop -p $(pgrep simple_switch)"
-
-# Check system logs for errors
-ssh ubuntu@192.168.1.12 "dmesg | tail -20"
-```
-
-## 📝 Customization
-
-### Adjusting Test Parameters
-
-```python
-# In latency_test.py
-tester = LatencyTester()
-# Update interface names if different
-tester.sensor_iface = 'your_sensor_interface'
-tester.monitor_iface = 'your_monitor_interface'
-
-tester.run_latency_test(
-    num_complete=50,     # Number of complete windows
-    num_partial=20,      # Number of partial windows  
-    spacing_seconds=2    # Time between patients
-)
-
-# In performance_test.py
-tester = PerformanceTester(
-    gateway_ip='192.168.1.12',      # Your gateway IP
-    gateway_user='ubuntu',          # SSH username
-    ssh_password='your_password'    # Or set up SSH keys
-)
-tester.run_performance_test(
-    target_rates=[10, 20, 50, 100, 200],  # Patients/minute to test
-    duration_per_rate=180                  # Seconds per rate
-)
-
-# In scalability_test.py
-tester.run_scalability_test(
-    max_patients=500,        # Maximum patients to test
-    step=25,                 # Patient count increment
-    duration_per_step=300    # Seconds per patient count
-)
-```
-
-### Custom Sensor Values
-```python
-# Modify sensor values for different conditions
-normal_values = [370, 98, 80, 120, 16, 0, 0, 1, 45, 1]      # Normal patient
-sepsis_values = [390, 94, 110, 90, 22, 1, 1, 2, 65, 1]      # Sepsis indicators  
-hf_values = [365, 95, 95, 140, 18, 0, 1, 1, 75, 0]          # Heart failure
-```
-
-### Adding Custom Analysis
-```python
-# In plot_results.py, add custom metrics
-def analyze_custom_metrics(df):
-    # Add your custom analysis here
-    sepsis_rate = (df['sepsis_prediction'] > 0).mean()
-    hf_rate = (df['hf_prediction'] > 0).mean()
-    high_news2_rate = (df['news2_score'] >= 7).mean()
-    
-    return {
-        'sepsis_detection_rate': sepsis_rate,
-        'hf_detection_rate': hf_rate, 
-        'high_risk_rate': high_news2_rate
-    }
-```
-
-## 🔬 Advanced Testing
-
-### Custom Test Scenarios
-```python
-# Create custom patient scenarios
-def create_custom_scenario(patient_id, condition_type):
-    if condition_type == 'covid':
-        # COVID-19 indicators
-        return [385, 92, 105, 130, 24, 1, 1, 2, 55, 1]
-    elif condition_type == 'stroke':
-        # Stroke indicators  
-        return [375, 96, 85, 150, 20, 0, 1, 3, 70, 0]
-    # Add more conditions as needed
-```
-
-### Integration with External Systems
-```python
-# Add hooks for external monitoring systems
-def send_to_monitoring_system(test_results):
-    # Send results to external dashboard/database
-    pass
-
-# Add database logging
-def log_to_database(test_data):
-    # Store results in database for historical analysis
-    pass
-```
 
 ## 📚 References
 
 - **P4 Programming**: [P4.org Documentation](https://p4.org/)
 - **BMv2 Switch**: [BMv2 GitHub](https://github.com/p4lang/behavioral-model)
 - **Scapy Documentation**: [Scapy Docs](https://scapy.readthedocs.io/)
-- **Patient Monitoring Standards**: HL7 FHIR, IEEE 11073
 
 ---
 
